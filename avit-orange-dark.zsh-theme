@@ -2,23 +2,22 @@
 
 PROMPT='
 $(_user_host)${_current_dir} $(git_prompt_info) $(_ruby_version)
-%{$fg[$CARETCOLOR]%}▶%{$resetcolor%} '
+%{$FG[$CARETCOLOR]%}▶%{$resetcolor%} '
 
-PROMPT2='%{$fg[$CARETCOLOR]%}◀%{$reset_color%} '
+PROMPT2='%{$FG[$CARETCOLOR]%}◀%{$reset_color%} '
 
 RPROMPT='$(_vi_status)%{$(echotc UP 1)%}$(_git_time_since_commit) $(git_prompt_status) ${_return_status}%{$(echotc DO 1)%}'
 
-#local _current_dir="%{$fg_bold[$AVIT_THEME_COLOR_BLUE]%}%3~%{$reset_color%} "
-local _current_dir="%{[01$fg_bold[$AVIT_THEME_COLOR_ORANGE]%3~%{$reset_color%} "
-local _return_status="%{$fg_bold[$AVIT_THEME_COLOR_RED]%}%(?..⍉)%{$reset_color%}"
-local _hist_no="%{$fg[$AVIT_THEME_COLOR_GREY]%}%h%{$reset_color%}"
+local _current_dir="%{$FX[bold]$FG[202]%}%3~%{$reset_color%} "
+local _return_status="%{$FX[bold]$FG[001]%}%(?..⍉)%{$reset_color%}"
+local _hist_no="%{$FG[249]%}%h%{$reset_color%}"
 
 function _current_dir() {
   local _max_pwd_length="65"
   if [[ $(echo -n $PWD | wc -c) -gt ${_max_pwd_length} ]]; then
-    echo "%{$fg_bold[$AVIT_THEME_COLOR_ORANGE]%}%-2~ ... %3~%{$reset_color%} "
+    echo "%{$FX[bold]$FG[202]%}%-2~ ... %3~%{$reset_color%} "
   else
-    echo "%{$fg_bold[$AVIT_THEME_COLOR_ORANGE]%}%~%{$reset_color%} "
+    echo "%{$FX[bold]$FG[202]%}%~%{$reset_color%} "
   fi
 }
 
@@ -29,7 +28,7 @@ function _user_host() {
     me="%n"
   fi
   if [[ -n $me ]]; then
-    echo "%{$fg[$AVIT_THEME_COLOR_ORANGE]%}$me%{$reset_color%}:"
+    echo "%{$FG[202]%}$me%{$reset_color%}:"
   fi
 }
 
@@ -41,9 +40,9 @@ function _vi_status() {
 
 function _ruby_version() {
   if {echo $fpath | grep -q "plugins/rvm"}; then
-    echo "%{$fg[$AVIT_THEME_COLOR_GREY]%}$(rvm_prompt_info)%{$reset_color%}"
+    echo "%{$FG[249]%}$(rvm_prompt_info)%{$reset_color%}"
   elif {echo $fpath | grep -q "plugins/rbenv"}; then
-    echo "%{$fg[$AVIT_THEME_COLOR_GREY]%}$(rbenv_prompt_info)%{$reset_color%}"
+    echo "%{$FG[249]%}$(rbenv_prompt_info)%{$reset_color%}"
   fi
 }
 
@@ -51,9 +50,7 @@ function _ruby_version() {
 # use a neutral color, otherwise colors will vary according to time.
 function _git_time_since_commit() {
 # Only proceed if there is actually a commit.
-  if git log -1 > /dev/null 2>&1; then
-    # Get the last commit.
-    last_commit=$(git log --pretty=format:'%at' -1 2> /dev/null)
+  if last_commit=$(git log --pretty=format:'%at' -1 2> /dev/null); then
     now=$(date +%s)
     seconds_since_last_commit=$((now-last_commit))
 
@@ -66,7 +63,7 @@ function _git_time_since_commit() {
     sub_hours=$((hours % 24))
     sub_minutes=$((minutes % 60))
 
-    if [ $hours -gt 24 ]; then
+    if [ $hours -ge 24 ]; then
       commit_age="${days}d"
     elif [ $minutes -gt 60 ]; then
       commit_age="${sub_hours}h${sub_minutes}m"
@@ -79,48 +76,34 @@ function _git_time_since_commit() {
   fi
 }
 
-for color in {000..255}; do
-    $fg[$color]="%{[38;5;${color}m%}"
-done
+if [[ $USER == "root" ]]; then
+  CARETCOLOR=001
+else
+  CARETCOLOR=202
+fi
 
-for color in {000..255}; do
-    $fg_bold[$color]="%{[01${color}m%}"
-done
+MODE_INDICATOR="%{$FX[bold]$FG[226]%}❮%{$reset_color%}%{$FG[226]%}❮❮%{$reset_color%}"
 
-MODE_INDICATOR="%{$fg_bold[$AVIT_THEME_COLOR_YELLOW]%}❮%{$reset_color%}%{$fg[$AVIT_THEME_COLOR_YELLOW]%}❮❮%{$reset_color%}"
-
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[$AVIT_THEME_COLOR_GREEN]%}"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$FG[046]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
 
-ZSH_THEME_GIT_PROMPT_DIRTY=" %{$fg[$AVIT_THEME_COLOR_RED]%}✗%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_CLEAN=" %{$fg[$AVIT_THEME_COLOR_GREEN]%}✔%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_ADDED="%{$fg[$AVIT_THEME_COLOR_GREEN]%}✚ "
-ZSH_THEME_GIT_PROMPT_MODIFIED="%{$fg[$AVIT_THEME_COLOR_YELLOW]%}⚑ "
-ZSH_THEME_GIT_PROMPT_DELETED="%{$fg[$AVIT_THEME_COLOR_RED]%}✖ "
-ZSH_THEME_GIT_PROMPT_RENAMED="%{$fg[$AVIT_THEME_COLOR_BLUE]%}▴ "
-ZSH_THEME_GIT_PROMPT_UNMERGED="%{$fg[$AVIT_THEME_COLOR_CYAN]%}§ "
-ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[$AVIT_THEME_COLOR_WHITE]%}◒ "
+ZSH_THEME_GIT_PROMPT_DIRTY=" %{$FG[196]%}✗%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_CLEAN=" %{$FG[046]%}✔%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_ADDED="%{$FG[046]%}✚ "
+ZSH_THEME_GIT_PROMPT_MODIFIED="%{$FG[226]%}⚑ "
+ZSH_THEME_GIT_PROMPT_DELETED="%{$FG[196]%}✖ "
+ZSH_THEME_GIT_PROMPT_RENAMED="%{$FG[045]%}▴ "
+ZSH_THEME_GIT_PROMPT_UNMERGED="%{$FG[081]%}§ "
+ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$FG[007]%}◒ "
 
 # Colors vary depending on time lapsed.
-ZSH_THEME_GIT_TIME_SINCE_COMMIT_SHORT="%{$fg[$AVIT_THEME_COLOR_GREEN]%}"
-ZSH_THEME_GIT_TIME_SHORT_COMMIT_MEDIUM="%{$fg[$AVIT_THEME_COLOR_YELLOW]%}"
-ZSH_THEME_GIT_TIME_SINCE_COMMIT_LONG="%{$fg[$AVIT_THEME_COLOR_RED]%}"
-ZSH_THEME_GIT_TIME_SINCE_COMMIT_NEUTRAL="%{$fg[$AVIT_THEME_COLOR_WHITE]%}"
+ZSH_THEME_GIT_TIME_SINCE_COMMIT_SHORT="%{$FG[046]%}"
+ZSH_THEME_GIT_TIME_SHORT_COMMIT_MEDIUM="%{$FG[226]%}"
+ZSH_THEME_GIT_TIME_SINCE_COMMIT_LONG="%{$FG[196]%}"
+ZSH_THEME_GIT_TIME_SINCE_COMMIT_NEUTRAL="%{$FG[007]%}"
 
-AVIT_THEME_COLOR_RED=001
-AVIT_THEME_COLOR_GREEN=046
-#AVIT_THEME_COLOR_YELLOW=226 Bright
-AVIT_THEME_COLOR_YELLOW=184
-#AVIT_THEME_COLOR_BLUE=012
-AVIT_THEME_COLOR_BLUE=202
-AVIT_THEME_COLOR_WHITE=007
-AVIT_THEME_COLOR_CYAN=202
-#AVIT_THEME_COLOR_CYAN=014
-AVIT_THEME_COLOR_GREY=249
-#AVIT_THEME_COLOR_ORANGE=166 darker
-AVIT_THEME_COLOR_ORANGE=202
-
-# LS colors, made with http://geoff.greer.fm/lscolors/
+# LS colors, made with https://geoff.greer.fm/lscolors/
 export LSCOLORS="exfxcxdxbxegedabagacad"
 export LS_COLORS='di=34;40:ln=35;40:so=32;40:pi=33;40:ex=31;40:bd=34;46:cd=34;43:su=0;41:sg=0;46:tw=0;42:ow=0;43:'
 export GREP_COLOR='1;33'
+
